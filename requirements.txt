@@ -1,0 +1,7 @@
+statistics
+random
+matplotlib
+sqlachemy
+requests
+dotenv
+os
