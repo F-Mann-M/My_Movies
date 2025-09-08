@@ -1,6 +1,5 @@
-#Title: Movies with API
-#Student: Friedemann Mücket
-#Version: 1
+#Title: My Movie App
+#Version: 1.0
 
 
 import statistics, random
