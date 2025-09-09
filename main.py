@@ -1,7 +1,7 @@
-from movie_storage.movies import movies_app
+from movie_storage.movies import select_user
 
 def main():
-    movies_app()
+    select_user()
 
 if __name__ == "__main__":
     main()

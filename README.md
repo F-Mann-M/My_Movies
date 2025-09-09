@@ -6,9 +6,9 @@ You can also generate a simple website which shows all movies of the list with p
 
 ## Usage
 1. Install all modules contained in requirements.txt.
-2. Run the main.py . A simple CLI will show you all options. Since the database is only created when the first movie is added, enter 2 (add movie)
+2. Run the main.py . A simple CLI will show you all options. Select a user. Since the database is empty start by adding a movie (enter 2)
 3. Enter a movie title if the title is known by omdbapi it will store the title along with imdb rating and release year into the database. If it's unknown an error message will occur 
-4. After you have added you favorite titles you can update there rating, delete them or sort them by rating, release year, generate a overview as web site, etc..
+4. After you have added you favorite titles you can update rating, delete movies or sort them by rating, release year, generate a overview as website, etc..
 5. Have fun by building you own movie database
 
 ## Version 1.0

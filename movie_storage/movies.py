@@ -1,16 +1,21 @@
 #Title: My Movie App
-#Version: 1.0
+#Version: 1.0 (first iteration)
 
 
 import statistics, random
-import matplotlib.pyplot as plt # this modul is needed for histogram
+import matplotlib.pyplot as plt
 from movie_storage.movie_storage_sql import add_movies, get_movies, update_movie, delete_movie
 from movie_storage.fetch_movie_data import fetch_movie_data
 from movie_storage.page_generator import generate_page
+from profil.user_managment import get_user_list, add_user, delete_user
+from profil.current_user import set_current_user, get_current_user
+
 
 def get_movie_list():
     """loads a dictionary and prints all movies along with their rating and year of release."""
-    print("\n===========List movies===========")
+    user_id, user_name = get_current_user()
+    print(f"\n==========={user_name}'s movie list===========")
+
     # get movies
     movies = get_movies()
     if movies is None:
@@ -56,8 +61,6 @@ def add_movie():
         # fetch movie data
         movie_data = fetch_movie_data(title)
         if movie_data is not None and movie_data:
-            print(movie_data.get("Error"))
-            # print(type(movie_data.get("Error")))
             movie_title = movie_data.get("Title")
             year = movie_data.get("Year")
             rating = movie_data.get("imdbRating")
@@ -66,10 +69,8 @@ def add_movie():
             #add movies to database
             if movie_title:
                 add_movies(movie_title, year, rating, poster)
-
-
-            # ToDo: fix error message
-            # ToDo: Error if there is no connection to API
+            else:
+                print(movie_data.get("Error"))
 
         return None
 
@@ -133,7 +134,7 @@ def get_movie_stats():
     movies_rating = []
     highest_rating = 0
     best_movies = []
-    lowest_rating = 10  # start with highest possible rating
+    lowest_rating = 10  # start with the highest rating possible
     worst_movies = []
 
     #get list of ratings
@@ -180,7 +181,7 @@ def print_random_movie():
     """Takes in a dictionary and prints a random key with value by using modul random"""
     print("\n===========Random movie===========")
     movies = get_movies()
-    if movies == None:
+    if movies is None:
         return None
 
     random_movie, info = random.choice(list(movies.items())) #choose a random movie form list
@@ -193,7 +194,7 @@ def search_movie():
     """Takes in a dictionary and user input. Checks if input is in dictionary"""
     print("\n===========Search movie===========")
     movies = get_movies()
-    if movies == None:
+    if movies is None:
         return None
 
     user_input = input("Enter part of movie name: ")
@@ -212,10 +213,11 @@ def search_movie():
 
 
 def movies_sorted_by_rating():
-    """Takes in an dictionary and prints all the movies and their ratings, in a descending order by the rating."""
+    """Takes in a dictionary and prints all the movies and their ratings in descending order by the rating."""
     print("\n===========Movies sorted===========")
     movies = get_movies()
-    if movies == None:
+    if (movies is
+            None):
         return None
 
     movies_list = [(title, info) for title, info in movies.items()]
@@ -224,14 +226,14 @@ def movies_sorted_by_rating():
         title = movies_sorted[index][0]
         rating = movies_sorted[index][1]["rating"]
         year = movies_sorted[index][1]["year"]
-        print(f"Movie: {title}\nRating: {rating}\nYear of releas: {year}\n")
+        print(f"Movie: {title}\nRating: {rating}\nYear of release: {year}\n")
 
 
 def show_histogram():
     """Takes in a dictionary. Uses values of dictionary to create histogram by using library matplotlib.pyplot"""
     print("\n===========Histogram===========")
     movies = get_movies()
-    if movies == None:
+    if movies is None:
         return None
 
     ratings = []
@@ -243,7 +245,7 @@ def show_histogram():
 
 def show_movies_chronological():
     movies = get_movies()
-    if movies == None:
+    if movies is None:
         return None
 
     user_choice = input("Do you want the latest movies first? (Y/N) ")
@@ -258,7 +260,7 @@ def show_movies_chronological():
         title = movies_sorted[index][0]
         rating = movies_sorted[index][1]["rating"]
         year = movies_sorted[index][1]["year"]
-        print(f"Movie: {title}\nRating: {rating}\nYear of releas: {year}\n")
+        print(f"Movie: {title}\nRating: {rating}\nYear of release: {year}\n")
 
 
 def check_rating_input(prompt, default_value):
@@ -304,7 +306,7 @@ def check_year_input(prompt, default_value):
 def filter_movies():
     print("\n===========Filter Movies===========")
     movies = get_movies()
-    if movies == None:
+    if movies is None:
         return None
 
     rating = check_rating_input("Enter minimum rating (leave blank for no minimum rating): ", 0)
@@ -321,7 +323,7 @@ def filter_movies():
     # print filtered movies
     for title, info in movies.items():
         if info["rating"] >= rating and start_year <= info["year"] <= end_year:
-            print(f"Movie: {title}\nRating: {info["rating"]}\nYear of releas: {info["year"]}\n")
+            print(f"Movie: {title}\nRating: {info["rating"]}\nYear of release: {info["year"]}\n")
     return None
 
 
@@ -330,15 +332,59 @@ def exit_program():
     exit()
 
 
+def command_add_user():
+    """prompt user to input username, checks if username is not in list and valid, add name to users database"""
+    user_list = get_user_list()
+    users = [user_name["name"] for user_id, user_name in user_list.items()]
+
+    while True:
+        new_user = input("Enter username: ")
+        if new_user in users:
+            print(f"User {new_user} already exist")
+        elif not new_user:
+            print("Invalid input")
+        else:
+            add_user(new_user)
+            movies()
 
 
-def movies_app():
+def select_user():
+    """shows a list of user with id. prompt user to choos a user by id. calls movie app"""
+    users = get_user_list()
+    user_id, user_name = get_current_user()
+    print("\n========Select User=========\n")
+    if user_name is not None:
+        print(f"Enter 'del' to delete current user: {user_name}")
+    print("Enter 'add' to add new user")
+    print("\nOr select a user by number: ")
+    for user_id, user in users.items():
+        print(f"{user_id}. {user["name"]}")
+
+    while True:
+        try:
+            selected_user_id = input("Enter a number: ")
+
+            if selected_user_id == "add":
+                command_add_user()
+                return None
+            elif selected_user_id == "del":
+                delete_user()
+                select_user() #reload to update list of users
+            elif selected_user_id:
+                set_current_user(int(selected_user_id), users[int(selected_user_id)].get("name"))
+                movies()
+        except Exception as e:
+            print(f"Error: {e}")
+
+
+def movies():
     """Prints the menu, gets the input of the user and calls function depending on the user input."""
+    user_id, user_name = get_current_user()
+    print(f"\n\nWelcome back, {user_name}! 🎬")
 
-    # repeatedly ask user for input
     while True:
         # print menu
-        print('''\n********** My Movies Database **********
+        print(f'''\n********** {user_name}'s Movie Database **********
 Menu:
 0. Exit
 1. List movies
@@ -353,6 +399,7 @@ Menu:
 10. Movies sorted by year
 11. Filter movies
 12. Generate website
+13. switch user
         ''')
 
         # dispatch table of functions
@@ -369,17 +416,19 @@ Menu:
             "9": show_histogram,
             "10": show_movies_chronological,
             "11": filter_movies,
-            "12": generate_page
+            "12": generate_page,
+            "13": select_user
         }
 
 
         # get user choice
-        user_choice = input("Enter choice (1-12): ")
+        user_choice = input("Enter choice (1-13): ")
 
         # call function
         if user_choice in menu_dict:
             menu_dict[user_choice]()
         else:
             print("invalid input")
+
         input("\nPress enter to continue ")
 
